@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en-US">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <meta name="description" content="btc relay, ethereum, bitcoin, bitcoin relay, smart contracts, sidechain, peg" />
+  <link rel="apple-touch-icon" sizes="57x57" href="images/favicons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="images/favicons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="images/favicons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="images/favicons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="images/favicons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="images/favicons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="images/favicons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="images/favicons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/favicons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="images/favicons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="images/favicons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicons/favicon-16x16.png">
+  <link rel="manifest" href="images/favicons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="images/favicons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,300,300italic,400italic,700,700italic|Montserrat:400,700' rel='stylesheet' type='text/css'>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Exchange Bitcoin for Ether</title>
+  <link rel="stylesheet" href="./css/bootstrap.min.css">
+  <link rel="stylesheet" href="./css/dapp.css">
+  <script src="./js/jquery-2.1.3.min.js"></script>
+  <script src="./js/bootstrap.min.js"></script>
+  <script src="./js/btcRelayAbi.js"></script>
+  <script src="./js/bignumber.js"></script>
+  <script src="./js/web3.min.js"></script>
+  <script src="./js/bitcoin-proof.js"></script>
+  <script type="text/javascript">
+
+  var btcproof = require('bitcoin-proof');
+
+  var gRelayAddr = '0x41f274c0023f83391de4e0733c609df5a124c3d4';
+  var gMerkleProof;
+  var gBlockHashOfTx;
+  var gFeeVerifyFinney;
+  var etherInWei = 1000000000000000000;
+
+  var RelayContractClass = web3.eth.contract(btcRelayAbi);  // see ./js/btcRelayAbi.js
+  var gRelayContract = RelayContractClass.at(gRelayAddr);
+  var eth2BtcABI = '[ { "constant": false, "inputs": [ { "name": "txBytes", "type": "bytes" }, { "name": "btcAddress", "type": "bytes20" }, { "name": "value", "type": "uint256" } ], "name": "checkValueSent", "outputs": [ { "name": "", "type": "bool" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "endContract", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "getBitcoinAddress", "outputs": [ { "name": "", "type": "bytes20" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "data", "type": "bytes" }, { "name": "pos", "type": "uint256" }, { "name": "bits", "type": "uint256" } ], "name": "getBytesLE", "outputs": [ { "name": "", "type": "uint256" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "getFeeRatio", "outputs": [ { "name": "", "type": "uint256" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "txBytes", "type": "bytes" } ], "name": "getFirstTwoOutputs", "outputs": [ { "name": "", "type": "uint256" }, { "name": "", "type": "bytes20" }, { "name": "", "type": "uint256" }, { "name": "", "type": "bytes20" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "txBytes", "type": "bytes" } ], "name": "getPubKeyFromTx", "outputs": [ { "name": "", "type": "bytes" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "getRelayAddress", "outputs": [ { "name": "", "type": "address" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "txBytes", "type": "bytes" } ], "name": "getSegtwitSignature", "outputs": [ { "name": "", "type": "bytes" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "txBytes", "type": "bytes" }, { "name": "pos", "type": "uint256" }, { "name": "script_len", "type": "uint256" } ], "name": "isP2PKH", "outputs": [ { "name": "", "type": "bool" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "txBytes", "type": "bytes" }, { "name": "pos", "type": "uint256" }, { "name": "script_len", "type": "uint256" } ], "name": "isP2SH", "outputs": [ { "name": "", "type": "bool" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "txBytes", "type": "bytes" }, { "name": "pos", "type": "uint256" }, { "name": "script_len", "type": "uint256" } ], "name": "parseOutputScript", "outputs": [ { "name": "", "type": "bytes20" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "rawTransaction", "type": "bytes" }, { "indexed": false, "name": "transactionHash", "type": "uint256" }, { "indexed": false, "name": "sender", "type": "address" }, { "indexed": false, "name": "senderPubKey", "type": "bytes" }, { "indexed": false, "name": "btcAmountSent", "type": "uint256" }, { "indexed": false, "name": "output1Address", "type": "bytes20" } ], "name": "relayedTransactionInfo", "type": "event" }, { "constant": false, "inputs": [ { "name": "txBytes", "type": "bytes" }, { "name": "pos", "type": "uint256" } ], "name": "parseVarInt", "outputs": [ { "name": "", "type": "uint256" }, { "name": "", "type": "uint256" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "rawTransaction", "type": "bytes" }, { "name": "transactionHash", "type": "uint256" } ], "name": "processTransaction", "outputs": [ { "name": "", "type": "int256" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "newPaymaster", "type": "address" } ], "name": "replacePaymaster", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "txBytes", "type": "bytes" }, { "name": "pos", "type": "uint256" }, { "name": "stop", "type": "uint256" } ], "name": "scanInputs", "outputs": [ { "name": "", "type": "uint256[]" }, { "name": "", "type": "uint256" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "txBytes", "type": "bytes" }, { "name": "pos", "type": "uint256" }, { "name": "stop", "type": "uint256" } ], "name": "scanOutputs", "outputs": [ { "name": "", "type": "uint256[]" }, { "name": "", "type": "uint256[]" }, { "name": "", "type": "uint256[]" }, { "name": "", "type": "uint256" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "seeClaimedTxs", "outputs": [ { "name": "", "type": "bytes32[]" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "rate", "type": "uint256" } ], "name": "setEther2BitcoinPrice", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "newFeeRatio", "type": "uint256" } ], "name": "setFeeRation", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "data", "type": "bytes" }, { "name": "start", "type": "uint256" } ], "name": "sliceBytes20", "outputs": [ { "name": "", "type": "bytes20" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "amount", "type": "uint256" } ], "name": "withdrawFunds", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "payable": true, "stateMutability": "payable", "type": "fallback" }, { "inputs": [ { "name": "btcAddress", "type": "bytes20" }, { "name": "adminAddr", "type": "address" }, { "name": "initialRate", "type": "uint256" }, { "name": "initialFeeRatio", "type": "uint256" } ], "payable": false, "stateMutability": "nonpayable", "type": "constructor" }, { "constant": true, "inputs": [], "name": "admin", "outputs": [ { "name": "", "type": "address" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "bitcoinAddress", "outputs": [ { "name": "", "type": "bytes20" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "btcParser", "outputs": [ { "name": "", "type": "address" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "btcrelayAddress", "outputs": [ { "name": "", "type": "address" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [ { "name": "", "type": "uint256" } ], "name": "claimedTxs", "outputs": [ { "name": "", "type": "bytes32" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "ether2BitcoinRate", "outputs": [ { "name": "", "type": "uint256" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "feeRatio", "outputs": [ { "name": "", "type": "uint256" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "getCurrentRate", "outputs": [ { "name": "", "type": "uint256" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "paymaster", "outputs": [ { "name": "", "type": "address" } ], "payable": false, "stateMutability": "view", "type": "function" } ]';
+  var eth2BtcContractAddress = '0xF371828DdCC21c8b0017Ef2BCc4E3c0375D2191f';
+  var gEth2BTCContract = web3.eth.contract(JSON.parse(eth2BtcABI)).at(eth2BtcContractAddress);
+
+  alert("WARNING! This service is experimental and only supports segwit transactions! Please do not use it except for experimentation!");
+
+  function setLiquidityAndPriceValues()
+  {
+      web3.eth.getBalance(eth2BtcContractAddress, 'pending', function(err, bal) {
+          console.log(err);
+          document.getElementById("contractEthLiquidity").innerText = "Contract balance: " + (bal / etherInWei) + " ETH";
+          gEth2BTCContract.getCurrentRate.call( function(err, data) {
+              document.getElementById("rate").innerText = "Exchange rate: " + data + " ETH to a BTC";
+              document.getElementById("maxTradeSize").innerText = "Send no more than " + ((bal / data) / etherInWei) + " BTC";
+          });
+      });
+      gEth2BTCContract.getFeeRatio.call(function(err, fee) {
+          var exchangeFee = 100 / parseInt(fee);
+          document.getElementById("fee").innerText = "Exchange fee: " + exchangeFee + "%";
+      });
+  }
+
+  function initWeb3()
+  {
+      if (typeof web3 !== 'undefined') {
+          // Web3 has been injected by the browser (Mist/MetaMask)
+          web3 = new Web3(web3.currentProvider);
+      } else {
+          // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
+          web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+      }
+      web3.eth.defaultAccount = web3.eth.coinbase;
+      setLiquidityAndPriceValues();
+  }
+
+  initWeb3();
+  poll();
+
+  function poll()
+  {
+      setTimeout(function() {
+          setLiquidityAndPriceValues();
+          poll();
+      }, 60000);
+  }
+
+  function doRelayTxAndGetEther(txBytes, txIndex, merkleSibling, txBlockHash) {
+    // gFeeVerifyFinney is transferred!  coinbase must have it or relayTx fails
+    var feeWei = web3.toWei(gFeeVerifyFinney, 'finney');
+    var objParam = { from: web3.eth.coinbase, value: feeWei, gas: 1900000 };
+
+    gRelayContract.relayTx.sendTransaction(txBytes, txIndex, merkleSibling,
+        txBlockHash, eth2BtcContractAddress, objParam, function(err, ethTx) {
+      if (err) {
+        console.log('@@@ relayTx error');
+        return;
+      }
+      var addr = getEthAddressFromBTCRawTx(txBytes.substring(2));
+      var alertMessage = "Your transaction has been submitted, " +
+          "after confirmation you will see ether in the same key that you used to send the bitcoin ("
+          + addr +
+          ") to find this, simply import your bitcoin private key into your ether wallet. Redirecting you to etherscan now...";
+      alert(alertMessage);
+      window.location.href = "https://etherscan.io/address/" + addr;
+    });
+  }
+
+  function getEthAddressFromBTCRawTx(txBytes)
+  {
+      var bytes = drop0x(txBytes);
+      var pubkey = getPubKeyFromTx(bytes);
+      return web3.sha3(pubkey).substring(0, 42); //addresses are truncated to 20 bytes
+  }
+
+  //NOTE: Only supports segwit txs
+  //https://bitcoin.stackexchange.com/questions/79723/where-is-the-pubkey-for-segwit-inputs
+  //if multisig, it will just grab the first pubkey
+  function getPubKeyFromTx(txBytes)
+  {
+      var startPos = txBytes.indexOf("21");
+      var endPos = startPos + 66;
+      return txBytes.substring(txBytes.indexOf("21"), endPos);
+  }
+
+  function drop0x(data) {
+      if(data.substring(0,2) == "0x") return data.substring(2);
+      else return data;
+  }
+
+  function callContract() {
+    var txBytes = '0x' + $('#txHexText').val();
+    var txBlockHash = '0x' + gBlockHashOfTx;
+
+    // web3.js wants 0x prepended
+    var merkleSibling = gMerkleProof.sibling.map(function(sib) {
+      return '0x' + sib;
+    });
+
+    doRelayTxAndGetEther(txBytes, gMerkleProof.txIndex, merkleSibling, txBlockHash);
+  }
+
+  // A transaction hash by itself has no meaning (it's just a hash), so a
+  // service (like blockr.io) needs to be used to lookup the raw transaction.
+  // This function also shows how to use the bitcoin-proof module.
+  function getTxInfo() {
+    var txid = $('#transHex').val();
+    var urlJsonTx = "https://blockexplorer.com/api/rawtx/" + txid;
+    $.getJSON(urlJsonTx, function(data) {
+        console.log("here is the data" + JSON.stringify(data));
+        var rawTx = data.rawtx;
+        $('#txHexText').val(rawTx);
+        var address = getEthAddressFromBTCRawTx(rawTx);
+        var message = "Your receiving address: " + address;
+        document.getElementById("ethAddressFromRawTx").innerHTML = message;
+        var urlGetBlockInfo = "https://blockexplorer.com/api/tx/" + txid;
+        // A separate call is needed because the transaction index, the position
+        // of the transaction in the block, is needed to be able to compute the
+        // Merkle proof
+        //TODO this is a lot of api calls
+        $.getJSON(urlGetBlockInfo, function(data) {
+            var blockNum = data.blockheight;
+            var blockHashUrl = "https://blockexplorer.com/api/block-index/" + blockNum;
+            $.getJSON(blockHashUrl, function(res) {
+                gBlockHashOfTx = res.blockHash;
+                $('#txBlockHash').text(gBlockHashOfTx);
+                var blockInfoURL = "https://blockexplorer.com/api/block/" + gBlockHashOfTx;
+                $.getJSON(blockInfoURL, function(res) {
+                    var txIndex;
+                    for (var key in res.tx) {
+                        if (res.tx[key] == txid) {
+                            txIndex = key;
+                            break;
+                        }
+                    }
+
+                    // Proof can now be computed from the raw transaction and
+                    // transaction index
+                    gMerkleProof = btcproof.getProof(res.tx, txIndex);
+                    console.log('merkle proof: ', gMerkleProof);
+                    $('#mProof').val(JSON.stringify(gMerkleProof));
+
+                    gRelayContract.getFeeAmount.call('0x' + gBlockHashOfTx, function(err, feeWei) {
+                        if (err) {
+                            console.log('@@@ getFeeAmount error');
+                            return;
+                        }
+
+                        gFeeVerifyFinney = web3.fromWei(feeWei, 'finney');
+                        $('#feeVerifyTx').text(gFeeVerifyFinney);
+                    });
+                });
+            });
+        });
+    })
+  }
+
+  $('#relayAddr').text(gRelayAddr);
+
+  function viewOnBlockchainDotInfo() {
+      window.location.href = "https://blockchain.com/btc/address/3K1pM4RgSR9nrGgy2zBemdU2oWjagtqBWW";
+  }
+
+  </script>
+</head>
+
+<body>
+  <div class="jumbotron">
+    <h1 align="center">Exchange Bitcoin for Ether</h1>
+    <h2 align="center">No account or KYC required</h2>
+  </div>
+  <div class="container">
+
+    <div class="row">
+      <h3> <strong>
+        Disclaimer: this exchange works by relaying a Bitcoin transaction on Ethereum and
+        sending back the corresponding ether to the same key that sent the bitcoin.
+        This service is completely open source and
+        can be viewed <a href="https://github.com/James-Sangalli/btcrelay">here</a> and <a href="https://github.com/James-Sangalli/learn-solidity-with-examples/tree/master/Finance/bitcoin-to-ethereum-swap">here</a>
+      </strong>
+      </h3>
+      <h3>Send Bitcoin to <a href="https://www.blockchain.com/btc/address/3K1pM4RgSR9nrGgy2zBemdU2oWjagtqBWW"><strong>3K1pM4RgSR9nrGgy2zBemdU2oWjagtqBWW</strong></a> and relay the transaction to receive Eth at the exchange rate below</h3>
+      <img src="https://blockchain.info/qr?data=3K1pM4RgSR9nrGgy2zBemdU2oWjagtqBWW&size=200">
+      <button id="viewOnBlockchainDotInfo" class="btn btn-primary btn-lg" onclick="viewOnBlockchainDotInfo()">View on blockchain.info</button>
+      <h3 id="contractAddressInfo">Contract address: <a href="https://etherscan.io/address/0xF371828DdCC21c8b0017Ef2BCc4E3c0375D2191f"><strong>0xB649A551202D89c51f20eEd94545C7bA47be9841</strong></a></h3>
+      <h3 id="contractEthLiquidity"></h3>
+      <h3 id="rate"></h3>
+      <h3 id="maxTradeSize"></h3>
+      <h3 id="fee"></h3>
+      <h3 id="ethAddressFromRawTx"></h3>
+    </div>
+
+    <h2>1.</h2>
+    <div class="row">
+      <form class="form">
+        <div class="form-group">
+          <label for="transHex">Bitcoin Transaction Hash</label>
+          <input type="text" class="form-control" id="transHex" size="64" maxlength="64"></input>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="getTxInfo()">Lookup</button>
+      </form>
+    </div>
+    <h2>2.</h2>
+    <div class="row">
+      <form>
+        <div class="form-group">
+          <label for="txHexText">Raw Transaction</label>
+          <textarea readonly class="form-control" name="textarea" id="txHexText" rows="6" cols="50"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="mProof">Merkle Proof</label>
+          <textarea readonly class="form-control" name="textarea" id="mProof" rows="6" cols="50"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="col-md-1 control-label">Block Hash</label>
+          <div class="col-md-9">
+            <p class="form-control-static" id="txBlockHash">0</p>
+          </div>
+        </div>
+        <br><br><br>
+        <div class="form-group">
+          <label class="col-md-2 control-label">Verification fee milli-ether</label>
+          <p class="form-control-static" id="feeVerifyTx">?</p>
+        </div>
+        <button type="button" class="btn btn-danger btn-lg" onclick="callContract();">Relay Transaction and Claim Ether</button>
+      </form>
+    </div>
+
+    <hr>
+
+    <div class="footer-logo">
+      <img src="./images/ethereum-logo-small.png"/>
+    </div>
+  </div>
+</body>
+</html>

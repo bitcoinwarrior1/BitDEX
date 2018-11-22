@@ -1,0 +1,16 @@
+.logo img {
+  width: 30%;
+  display: block;
+  margin: 30px auto 30px;
+}
+
+.footer-logo img {
+  height: 88px;
+  display: block;
+  margin: 30px auto 30px;
+}
+
+#mProof {
+  font-size: smaller;
+}
+
