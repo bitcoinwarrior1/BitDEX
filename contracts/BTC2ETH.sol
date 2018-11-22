@@ -1,25 +1,10 @@
 pragma solidity ^0.4.0;
-import "./btcrelayInterface" as btcrelayInterface;
-import "./BtcParser" as BtcParser;
-
-library ValidateSPV {
-    /// @notice                 Valides a tx inclusion in the block
-    /// @param _txid            The txid (LE)
-    /// @param _merkleRoot      The merkle root
-    /// @param _proof           The proof (concatenated LE hashes)
-    /// @param _index           The proof index
-    /// @return                 true if fully valid, false otherwise
-    function prove(
-        bytes32 _txid,
-        bytes32 _merkleRoot,
-        bytes _proof,
-        uint _index
-    ) public pure returns (bool) {}
-}
+import {BtcParser} "https://raw.githubusercontent.com/James-Sangalli/learn-solidity-with-examples/master/Finance/bitcoin-to-ethereum-swap/BtcParser.sol";
+import {ValidateSPV} from "https://raw.githubusercontent.com/James-Sangalli/bitcoin-spv/master/contracts/ValidateSPV.sol";
 
 // "0xbe086099e0ff00fc0cfbc77a8dd09375ae889fbd", "0x85af7e7A6F15874C139695d6d8DC276a39c2d601", 30, 100
 // Mainnet: 
-contract BTC2ETH is BtcParser
+contract BTC2ETH
 {
     address public btcrelayAddress;
     bytes32[] public claimedTxs;
@@ -29,8 +14,6 @@ contract BTC2ETH is BtcParser
     bytes20 public bitcoinAddress;
     BtcParser public btcParser = new BtcParser();
     uint public feeRatio;
-    address public validateSPVLibAddr = 0xaa75a0d48fca26ec2102ab68047e98a80a63df1d;
-    ValidateSPV public validateSPV = new ValidateSPV(validateSPVLibAddr);
     
     event processedTransactionInfo(
         bytes rawTransaction,
@@ -113,7 +96,7 @@ contract BTC2ETH is BtcParser
     ) public 
     {
         //checks the tx is valid, can proceed from there to check if it went to the right place etc
-        require(validateSPV.prove(_txid, _merkleRoot, _proof, _index));
+        require(ValidateSPV.prove(_txid, _merkleRoot, _proof, _index));
         bytes32 hashedRawTx = keccak256(rawTransaction);
         checkClaims(claimedTxs, hashedRawTx);
         bytes memory senderPubKey = getPubKeyFromTx(rawTransaction);
