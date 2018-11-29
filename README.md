@@ -24,7 +24,7 @@ Just like Bitcoin, no one will own this exchange, however you can own tokens whi
 This token enables anyone to own a piece of a decentralised mechanism and can provide more user buy in and incentive to see the exchange succeed. 
 By owning the token you have an incentive to make it successful and will try harder to improve the system. 
 
-### Prerequisites
+## Prerequisites
 
 Install [metamask](https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn?hl=en) and use [Remix](https://remix.ethereum.org/) for using contracts.
 
@@ -47,6 +47,6 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Acknowledgments
 
-TODO
+[bitcoin-spv](https://github.com/summa-tx/bitcoin-spv) allows for an efficient way to prove bitcoin SPV's inside ethereum. 
 
 ![alt text](https://lh3.googleusercontent.com/-pO99c0BYNiU/WkS8MxP0WbI/AAAAAAAAFHs/h_x11nQxXUo_Ifc-aF4fKThx5VU7SqcFQCL0BGAYYCw/h629/bit1NY.gif)
