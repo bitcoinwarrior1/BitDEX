@@ -8,7 +8,7 @@ I have provided example code to get started with building cross chain swaps betw
 See the [issues](https://github.com/James-Sangalli/The-DAO-of-Decentralised-Exchange/issues), [sample contracts](https://github.com/James-Sangalli/The-DAO-of-Decentralised-Exchange/tree/master/contracts) and [projects](https://github.com/James-Sangalli/The-DAO-of-Decentralised-Exchange/projects) to see how you can help and get a slice of it. 
 
 ## Vision
-Build an exchange wholly owned by the people and that is impossible to take down, break into or censor. 
+Build an exchange that is frictionless to use, cannot be taken down and owned by the community. The Bittorent of Exchanges with token economics. 
 
 ## Problem
 Exchanges nowadays are vulnerable to attack from governments, hackers or corrupt operators. If the government wants these exchanges to do KYC, then they have to do KYC (see shapeshift). These exchanges are often taken down and require a cumbersome user experience with accounts and other regulatory hurdles. Despite all of this, the exchange can still go down and lose all your money.
