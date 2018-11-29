@@ -1,3 +1,5 @@
+[![License](https://img.shields.io/badge/license-MIT-green.svg?style=flat)]
+
 # The DAO of Decentralised Exchange
 
 An unstoppable, open, ownerless, censorship resistant and easy to use cross chain DEX. 
