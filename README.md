@@ -1,11 +1,52 @@
-# Experimental-Cross-Chain-DEX
-An experimental cross chain DEX between Bitcoin and Ether
+# The DAO of Decentralised Exchange
 
-### bitcoin to ether
-Click [here]()
+An unstoppable, open, ownerless, censorship resistant and easy to use cross chain DEX. 
 
-### ether to bitcoin
-This is just a contract that runs on xcontract. You send ether to the contract and if you don't get the bitcoin before a week you can simply claim it back using the contract. Click [here]() to access. 
+## Getting Started
 
-### dependencies
-This service uses [bitcoin-spv](https://github.com/summa-tx/bitcoin-spv) to allow a cheap verification of proofs inside the smart contract. This is cheaper than using BtcRelay as it only requires a slice of the blocks rather than the whole chain in sequence. 
+I have provided example code to get started with building cross chain swaps between Bitcoin and Ethereum. We need your help to make this an exchanged owned by the community with a beautiful UX and robust infrastructure.
+See the [issues](https://github.com/James-Sangalli/The-DAO-of-Decentralised-Exchange/issues), [sample contracts](https://github.com/James-Sangalli/The-DAO-of-Decentralised-Exchange/tree/master/contracts) and [projects](https://github.com/James-Sangalli/The-DAO-of-Decentralised-Exchange/projects) to see how you can help and get a slice of it. 
+
+## Vision
+Build an exchange wholly owned by the people and that is impossible to take down, break into or censor. 
+
+## Problem
+Exchanges nowadays are vulnerable to attack from governments, hackers or corrupt operators. If the government wants these exchanges to do KYC, then they have to do KYC (see shapeshift). These exchanges are often taken down and require a cumbersome user experience with accounts and other regulatory hurdles. Despite all of this, the exchange can still go down and lose all your money.
+
+## Solution
+Leveraging exisiting technologies to enable cross chain swaps between the two most common cryptocurrencies (Bitcoin and Ethereum). I have provided some examples in here which allow this to exist with a basic swap, however we need to expand on it and make it more robust, flexible (compatible with other blockchains) and user friendly.
+
+## Advantages
+No Accounts, no KYC, quicker, faster, more transparent, safer and censorship resistant. 
+
+## Token Economy
+Just like Bitcoin, no one will own this exchange, however you can own tokens which provide an incentive layer by giving you a percentage of the fees gained. 
+This token enables anyone to own a piece of a decentralised mechanism and can provide more user buy in and incentive to see the exchange succeed. 
+By owning the token you have an incentive to make it successful and will try harder to improve the system. 
+
+### Prerequisites
+
+Install [metamask](https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn?hl=en) and use [Remix](https://remix.ethereum.org/) for using contracts.
+
+## Running the tests
+
+TODO
+
+## Deployment
+
+I recommend deploying the smart contracts on [remix]() with [metamask]()
+
+## Contributing
+
+Anyone is encouraged to contribute to this project. That could be in the form of writing docs, improving the UI, building the backend or writing good tests. 
+We love to celebrate each contribution and contributing to this project should help you sharpen your skills and potentially enable you to build the future of exchange in the crypto world. 
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+
+## Acknowledgments
+
+TODO
+
+![alt text](https://lh3.googleusercontent.com/-pO99c0BYNiU/WkS8MxP0WbI/AAAAAAAAFHs/h_x11nQxXUo_Ifc-aF4fKThx5VU7SqcFQCL0BGAYYCw/h629/bit1NY.gif)
