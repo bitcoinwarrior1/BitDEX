@@ -1,8 +1,8 @@
 ![License](https://img.shields.io/badge/license-MIT-green.svg?style=flat)
 
-# The DAO of Decentralised Exchange
+# BitDEX
 
-An unstoppable, open, ownerless, censorship resistant and easy to use cross chain DEX. 
+An unstoppable, open, ownerless, censorship resistant and easy to use cross chain DEX. The Bittorent of Cryptocurrency exchange
 
 ## Getting Started
 
