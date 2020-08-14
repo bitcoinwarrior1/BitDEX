@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en-US">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <meta name="description" content="btc relay, ethereum, bitcoin, bitcoin relay, smart contracts, sidechain, peg" />
+  <link rel="apple-touch-icon" sizes="57x57" href="images/favicons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="images/favicons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="images/favicons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="images/favicons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="images/favicons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="images/favicons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="images/favicons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="images/favicons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/favicons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="images/favicons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="images/favicons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicons/favicon-16x16.png">
+  <link rel="manifest" href="images/favicons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="images/favicons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,300,300italic,400italic,700,700italic|Montserrat:400,700' rel='stylesheet' type='text/css'>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Exchange Bitcoin for Tokens on Ethereum</title>
+  <link rel="stylesheet" href="./css/bootstrap.min.css">
+  <link rel="stylesheet" href="./css/dapp.css">
+  <script src="./js/jquery-2.1.3.min.js"></script>
+  <script src="./js/bootstrap.min.js"></script>
+  <script src="./js/btcRelayAbi.js"></script>
+  <script src="./js/bignumber.js"></script>
+  <script src="./js/web3.min.js"></script>
+  <script src="./js/bitcoin-proof.js"></script>
+  <script type="text/javascript">
+
+  let btcproof = require('bitcoin-proof');
+
+  let gMerkleProof;
+  let gBlockHashOfTx;
+  let ABI = [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isStillActive",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "rawTransaction",
+          "type": "bytes"
+        },
+        {
+          "name": "transactionHash",
+          "type": "uint256"
+        },
+        {
+          "name": "_txid",
+          "type": "bytes32"
+        },
+        {
+          "name": "_merkleRoot",
+          "type": "bytes32"
+        },
+        {
+          "name": "_proof",
+          "type": "bytes29"
+        },
+        {
+          "name": "_index",
+          "type": "uint256"
+        }
+      ],
+      "name": "proveBTCTransactionAndMint",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "name": "_bitcoinAddressOfTokenSeller",
+          "type": "bytes20"
+        },
+        {
+          "name": "_tokenContract",
+          "type": "address"
+        },
+        {
+          "name": "_deadline",
+          "type": "uint256"
+        },
+        {
+          "name": "_rate",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    }
+  ];
+  let buyTokensWithBTCAddress = '0x0000000000000000000000000000000000000000'; //TODO
+  let gBuyTokensWithBTC = web3.eth.contract(ABI).at(buyTokensWithBTCAddress);
+
+  alert("WARNING! This service is experimental and only supports segwit transactions! Please do not use it except for experimentation!");
+
+  function initWeb3()
+  {
+      if (typeof web3 !== 'undefined') {
+          // Web3 has been injected by the browser (Mist/MetaMask)
+          web3 = new Web3(web3.currentProvider);
+      } else {
+          // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
+          web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+      }
+      web3.eth.defaultAccount = web3.eth.coinbase;
+  }
+
+  initWeb3();
+
+  function doRelayTxAndGetTokens(txBytes, txIndex, merkleSibling, txBlockHash) {
+    gBuyTokensWithBTC.isStillActive.call(function(err, result) {
+        if(result) {
+          gBuyTokensWithBTC.proveBTCTransactionAndMint.sendTransaction(txBytes, txIndex, merkleSibling,
+                  txBlockHash, buyTokensWithBTCAddress, function(err, ethTx) {
+                    if (err) {
+                      console.log('@@@ relayTx error');
+                      return;
+                    }
+                    let addr = getEthAddressFromBTCRawTx(txBytes.substring(2));
+                    let alertMessage = "Your transaction has been submitted, " +
+                            "after confirmation you will see ether in the same key that you used to send the bitcoin ("
+                            + addr +
+                            ") to find this, simply import your bitcoin private key into your ether wallet. Redirecting you to etherscan now...";
+                    alert(alertMessage);
+                    window.location.href = "https://etherscan.io/address/" + addr;
+                  });
+        } else {
+          alert("time line is complete");
+        }
+    });
+  }
+
+  function getEthAddressFromBTCRawTx(txBytes)
+  {
+      let bytes = drop0x(txBytes);
+      let pubkey = getPubKeyFromTx(bytes);
+      return web3.sha3(pubkey).substring(0, 42); //addresses are truncated to 20 bytes
+  }
+
+  //NOTE: Only supports segwit txs
+  //https://bitcoin.stackexchange.com/questions/79723/where-is-the-pubkey-for-segwit-inputs
+  //if multisig, it will just grab the first pubkey
+  function getPubKeyFromTx(txBytes)
+  {
+      let startPos = txBytes.indexOf("21");
+      let endPos = startPos + 66;
+      return txBytes.substring(txBytes.indexOf("21"), endPos);
+  }
+
+  function drop0x(data) {
+      if(data.substring(0,2) == "0x") return data.substring(2);
+      else return data;
+  }
+
+  function callContract() {
+    let txBytes = '0x' + $('#txHexText').val();
+    let txBlockHash = '0x' + gBlockHashOfTx;
+
+    // web3.js wants 0x prepended
+    let merkleSibling = gMerkleProof.sibling.map(function(sib) {
+      return '0x' + sib;
+    });
+
+    doRelayTxAndGetTokens(txBytes, gMerkleProof.txIndex, merkleSibling, txBlockHash);
+  }
+
+  // A transaction hash by itself has no meaning (it's just a hash), so a
+  // service (like blockr.io) needs to be used to lookup the raw transaction.
+  // This function also shows how to use the bitcoin-proof module.
+  function getTxInfo() {
+    let txid = $('#transHex').val();
+    let urlJsonTx = "https://blockexplorer.com/api/rawtx/" + txid;
+    $.getJSON(urlJsonTx, function(data) {
+        console.log("here is the data" + JSON.stringify(data));
+        let rawTx = data.rawtx;
+        $('#txHexText').val(rawTx);
+        let address = getEthAddressFromBTCRawTx(rawTx);
+        let message = "Your receiving address: " + address;
+        document.getElementById("ethAddressFromRawTx").innerHTML = message;
+        let urlGetBlockInfo = "https://blockexplorer.com/api/tx/" + txid;
+        // A separate call is needed because the transaction index, the position
+        // of the transaction in the block, is needed to be able to compute the
+        // Merkle proof
+        //TODO this is a lot of api calls
+        $.getJSON(urlGetBlockInfo, function(data) {
+            let blockNum = data.blockheight;
+            let blockHashUrl = "https://blockexplorer.com/api/block-index/" + blockNum;
+            $.getJSON(blockHashUrl, function(res) {
+                gBlockHashOfTx = res.blockHash;
+                $('#txBlockHash').text(gBlockHashOfTx);
+                let blockInfoURL = "https://blockexplorer.com/api/block/" + gBlockHashOfTx;
+                $.getJSON(blockInfoURL, function(res) {
+                    let txIndex;
+                    for (let key in res.tx) {
+                        if (res.tx[key] == txid) {
+                            txIndex = key;
+                            break;
+                        }
+                    }
+
+                    // Proof can now be computed from the raw transaction and
+                    // transaction index
+                    gMerkleProof = btcproof.getProof(res.tx, txIndex);
+                    console.log('merkle proof: ', gMerkleProof);
+                    $('#mProof').val(JSON.stringify(gMerkleProof));
+                    //TODO implement transaction call to contract
+                });
+            });
+        });
+    })
+  }
+
+  $('#relayAddr').text(gRelayAddr);
+
+  function viewOnBlockchainDotInfo() {
+      window.location.href = "https://blockchain.com/btc/address/3K1pM4RgSR9nrGgy2zBemdU2oWjagtqBWW";
+  }
+
+  </script>
+</head>
+
+<body>
+  <div class="jumbotron">
+    <h1 align="center">Exchange Bitcoin for Ethereum Tokens</h1>
+    <h2 align="center">No account or KYC required</h2>
+  </div>
+  <div class="container">
+
+    <div class="row">
+      <h3> <strong>
+        Disclaimer: this exchange works by relaying a Bitcoin transaction on Ethereum and
+        minting tokens back to the same key that sent the bitcoin.
+        </strong>
+      </h3>
+      <h3>Send Bitcoin to <a href="https://www.blockchain.com/btc/address/3K1pM4RgSR9nrGgy2zBemdU2oWjagtqBWW"><strong>3K1pM4RgSR9nrGgy2zBemdU2oWjagtqBWW</strong></a> and relay the transaction to receive Tokens at the exchange rate below</h3>
+      <img src="https://blockchain.info/qr?data=3K1pM4RgSR9nrGgy2zBemdU2oWjagtqBWW&size=200">
+      <button id="viewOnBlockchainDotInfo" class="btn btn-primary btn-lg" onclick="viewOnBlockchainDotInfo()">View on blockchain.info</button>
+      <h3 id="contractAddressInfo">Contract address: <a href="https://etherscan.io/address/0xF371828DdCC21c8b0017Ef2BCc4E3c0375D2191f"><strong>0xB649A551202D89c51f20eEd94545C7bA47be9841</strong></a></h3>
+      <h3 id="contractEthLiquidity"></h3>
+      <h3 id="rate"></h3>
+      <h3 id="maxTradeSize"></h3>
+      <h3 id="fee"></h3>
+      <h3 id="ethAddressFromRawTx"></h3>
+    </div>
+
+    <h2>1.</h2>
+    <div class="row">
+      <form class="form">
+        <div class="form-group">
+          <label for="transHex">Bitcoin Transaction Hash</label>
+          <input type="text" class="form-control" id="transHex" size="64" maxlength="64"></input>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="getTxInfo()">Lookup</button>
+      </form>
+    </div>
+    <h2>2.</h2>
+    <div class="row">
+      <form>
+        <div class="form-group">
+          <label for="txHexText">Raw Transaction</label>
+          <textarea readonly class="form-control" name="textarea" id="txHexText" rows="6" cols="50"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="mProof">Merkle Proof</label>
+          <textarea readonly class="form-control" name="textarea" id="mProof" rows="6" cols="50"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="col-md-1 control-label">Block Hash</label>
+          <div class="col-md-9">
+            <p class="form-control-static" id="txBlockHash">0</p>
+          </div>
+        </div>
+        <br><br><br>
+
+        <button type="button" class="btn btn-danger btn-lg" onclick="callContract();">Relay Transaction and Claim Ether</button>
+      </form>
+    </div>
+    <hr>
+    <div class="footer-logo">
+      <img src="./images/ethereum-logo-small.png"/>
+    </div>
+  </div>
+</body>
+</html>

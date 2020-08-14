@@ -1,5 +1,5 @@
 pragma solidity ^0.4.0;
-import {BtcParser} "https://raw.githubusercontent.com/James-Sangalli/learn-solidity-with-examples/master/Finance/bitcoin-to-ethereum-swap/BtcParser.sol";
+import {BtcParser} from "https://raw.githubusercontent.com/James-Sangalli/learn-solidity-with-examples/master/Finance/bitcoin-to-ethereum-swap/BtcParser.sol";
 import {ValidateSPV} from "https://raw.githubusercontent.com/James-Sangalli/bitcoin-spv/master/contracts/ValidateSPV.sol";
 
 // "0xbe086099e0ff00fc0cfbc77a8dd09375ae889fbd", "0x85af7e7A6F15874C139695d6d8DC276a39c2d601", 30, 100
